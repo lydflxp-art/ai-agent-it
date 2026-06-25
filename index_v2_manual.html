@@ -1,0 +1,2660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 经纪人 2.0 · 全新升级</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --violet: #978AFF;
+      --cyan: #68B1FF;
+      --magenta: #CC73FF;
+      --bg: #04040a;
+      --surface: #0c0c14;
+      --surface-2: #12121c;
+      --ink: #f2f3f8;
+      --muted: #9ba3b8;
+      --border: rgba(255, 255, 255, 0.08);
+      --glow-violet: rgba(151, 138, 255, 0.35);
+      --glow-cyan: rgba(104, 177, 255, 0.3);
+      --glow-magenta: rgba(204, 115, 255, 0.28);
+      --radius: 16px;
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --z-nav: 100;
+      --z-modal: 200;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      font-family: "Noto Sans SC", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Ambient background ── */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient__orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.45;
+      animation: drift 18s var(--ease-out) infinite alternate;
+    }
+    .ambient__orb--1 {
+      width: 55vw; height: 55vw;
+      top: -15%; left: -10%;
+      background: radial-gradient(circle, var(--violet), transparent 70%);
+    }
+    .ambient__orb--2 {
+      width: 45vw; height: 45vw;
+      top: 30%; right: -15%;
+      background: radial-gradient(circle, var(--cyan), transparent 70%);
+      animation-delay: -6s;
+    }
+    .ambient__orb--3 {
+      width: 40vw; height: 40vw;
+      bottom: -10%; left: 25%;
+      background: radial-gradient(circle, var(--magenta), transparent 70%);
+      animation-delay: -12s;
+    }
+    .ambient__grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(3%, 5%) scale(1.08); }
+    }
+
+    /* ── Layout ── */
+    .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 2.5rem); overflow-x: clip; }
+    section { padding: clamp(2.75rem, 6vw, 4.75rem) 0; }
+
+    /* ── Nav ── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: var(--z-nav);
+      padding: 1rem 0;
+      transition: background 0.4s var(--ease-out), backdrop-filter 0.4s;
+    }
+    .nav.is-scrolled {
+      background: rgba(4, 4, 10, 0.82);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .nav__logo {
+      font-family: "Bricolage Grotesque", "Noto Sans SC", sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav__logo-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--cyan));
+      box-shadow: 0 0 12px var(--glow-violet);
+    }
+    .nav__links {
+      display: flex;
+      gap: clamp(1rem, 3vw, 2rem);
+      list-style: none;
+    }
+    .nav__links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.25s;
+    }
+    .nav__links a:hover { color: var(--ink); }
+    .nav__cta {
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(151, 138, 255, 0.4);
+      background: rgba(151, 138, 255, 0.12);
+      color: var(--ink);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.25s, box-shadow 0.25s, transform 0.25s;
+    }
+    .nav__cta:hover {
+      background: rgba(151, 138, 255, 0.22);
+      box-shadow: 0 0 24px var(--glow-violet);
+      transform: translateY(-1px);
+    }
+    @media (max-width: 720px) {
+      .nav__links { display: none; }
+    }
+
+    /* ── Screenshot slot (image only, no animation overlay) ── */
+    .shot-slot {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px dashed rgba(151, 138, 255, 0.35);
+      background: linear-gradient(145deg, rgba(151,138,255,0.04), rgba(104,177,255,0.03));
+      aspect-ratio: 16 / 10;
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+    }
+    .shot-slot--wide { aspect-ratio: 21 / 9; }
+    .shot-slot--card { aspect-ratio: 3 / 2; }
+    .shot-slot--mini { aspect-ratio: 378 / 444; margin-top: 0.85rem; }
+    .shot-slot__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.5s var(--ease-out);
+    }
+    .shot-slot.has-image .shot-slot__img { opacity: 1; }
+    .shot-slot.has-image {
+      border-style: solid;
+      border-color: var(--border);
+      background: #08080f;
+    }
+    .shot-slot__ph {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1.25rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    .shot-slot.has-image .shot-slot__ph { opacity: 0; }
+    .shot-slot__ph svg { opacity: 0.45; }
+    .shot-slot__path {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 0.65rem;
+      color: var(--cyan);
+      word-break: break-all;
+      max-width: 90%;
+    }
+    .shot-slot__label {
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    /* ── Media split: screenshot + demo side by side ── */
+    .media-split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      align-items: stretch;
+      width: 100%;
+      max-width: 100%;
+    }
+    .media-split--hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .media-split--stack { grid-template-columns: minmax(0, 1fr); }
+    .media-split--compact { grid-template-columns: minmax(0, 1fr); }
+    @media (max-width: 900px) {
+      .media-split,
+      .media-split--hero { grid-template-columns: minmax(0, 1fr); }
+    }
+    .media-split__label {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: -0.25rem;
+    }
+    .media-split__label span:last-child { color: var(--cyan); }
+    .media-split--hero .media-split__label {
+      grid-column: auto;
+      margin-bottom: -0.25rem;
+    }
+    .media-split--hero .media-split__label--shot {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .media-split--hero .media-split__label--shot span {
+      color: var(--muted);
+    }
+    .media-split--hero .media-split__label--demo {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .media-split--hero .media-split__label--demo span {
+      color: var(--cyan);
+    }
+    .media-split--hero .shot-slot {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    .media-split--hero .demo-box {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    @media (max-width: 900px) {
+      .media-split--hero .media-split__label--shot,
+      .media-split--hero .shot-slot,
+      .media-split--hero .media-split__label--demo,
+      .media-split--hero .demo-box {
+        grid-column: 1;
+        grid-row: auto;
+      }
+      .media-split--hero .media-split__label--shot { order: 1; }
+      .media-split--hero .shot-slot { order: 2; }
+      .media-split--hero .media-split__label--demo { order: 3; }
+      .media-split--hero .demo-box { order: 4; }
+    }
+
+    /* ── Demo box (animation only, frosted glass) ── */
+    .demo-box {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(151, 138, 255, 0.25);
+      background: #08080f;
+      aspect-ratio: 16 / 10;
+      min-height: 140px;
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+      isolation: isolate;
+    }
+    .demo-box--tall { aspect-ratio: unset; min-height: 180px; }
+    .demo-box--compact { aspect-ratio: 16 / 10; min-height: 120px; }
+    .demo-box--fill { aspect-ratio: unset; height: 100%; min-height: 180px; border-radius: 0; border: none; }
+    .demo-box__mesh {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(151,138,255,0.18), transparent 55%),
+        radial-gradient(ellipse 60% 50% at 80% 70%, rgba(104,177,255,0.14), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(204,115,255,0.1), transparent 45%),
+        linear-gradient(160deg, #0a0a12, #06060c);
+      animation: meshShift 12s ease-in-out infinite alternate;
+    }
+    @keyframes meshShift {
+      0% { filter: hue-rotate(0deg) brightness(1); transform: scale(1); }
+      100% { filter: hue-rotate(12deg) brightness(1.08); transform: scale(1.04); }
+    }
+    .demo-box__blur {
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(0px) saturate(1.2);
+      -webkit-backdrop-filter: blur(0px) saturate(1.2);
+      background: linear-gradient(135deg, rgba(151,138,255,0.05) 0%, transparent 50%, rgba(104,177,255,0.06) 100%);
+      pointer-events: none;
+      transition: backdrop-filter 0.8s var(--ease-out);
+    }
+    .demo-box.is-demoing .demo-box__blur {
+      backdrop-filter: blur(8px) saturate(1.4);
+      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+    }
+    .demo-box__shine {
+      position: absolute;
+      inset: -50%;
+      background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,0.07) 50%, transparent 58%);
+      animation: shineSweep 5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes shineSweep {
+      0%, 100% { transform: translateX(-30%) rotate(12deg); opacity: 0; }
+      40%, 60% { opacity: 1; }
+      100% { transform: translateX(30%) rotate(12deg); }
+    }
+    .glass-float {
+      position: absolute;
+      z-index: 3;
+      padding: 0.4rem 0.65rem;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px) saturate(1.5);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: var(--ink);
+      max-width: calc(100% - 1rem);
+      white-space: normal;
+      word-break: break-word;
+      animation: floatBob 4s ease-in-out infinite;
+    }
+    .glass-float--violet { border-color: rgba(151,138,255,0.35); color: var(--violet); }
+    .glass-float--cyan { border-color: rgba(104,177,255,0.35); color: var(--cyan); }
+    .glass-float--mag { border-color: rgba(204,115,255,0.35); color: var(--magenta); }
+    @keyframes floatBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* ── Abstract demo layers ── */
+    .demo-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(0.5rem, 2vw, 1rem);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s var(--ease-out);
+    }
+    .demo-layer.is-active { opacity: 1; }
+    .demo-ui {
+      width: 100%;
+      max-width: 100%;
+      padding: clamp(0.6rem, 2vw, 1rem);
+      border-radius: 14px;
+      background: rgba(12,12,20,0.55);
+      backdrop-filter: blur(24px) saturate(1.6);
+      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .demo-ui__bar {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 0.75rem;
+    }
+    .demo-ui__dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+    .demo-ui__dot--r { background: rgba(255,100,100,0.5); }
+    .demo-ui__dot--y { background: rgba(255,200,80,0.5); }
+    .demo-ui__dot--g { background: rgba(80,200,120,0.5); }
+    .demo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      margin: 0.1rem;
+      opacity: 0;
+      transform: translateY(8px);
+      max-width: 100%;
+    }
+    .demo-chip.is-show { animation: chipIn 0.45s var(--ease-out) forwards; }
+    @keyframes chipIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .demo-chips { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+    .demo-chip--hash { background: rgba(204,115,255,0.2); color: var(--magenta); border: 1px solid rgba(204,115,255,0.3); }
+    .demo-chip--amp { background: rgba(151,138,255,0.2); color: var(--violet); border: 1px solid rgba(151,138,255,0.3); }
+    .demo-chip--at { background: rgba(104,177,255,0.2); color: var(--cyan); border: 1px solid rgba(104,177,255,0.3); }
+    .demo-chip--cyan { background: rgba(104,177,255,0.15); color: var(--cyan); border: 1px solid rgba(104,177,255,0.25); }
+    .demo-chip--doc { background: rgba(255,255,255,0.06); color: var(--ink); border: 1px solid rgba(255,255,255,0.12); }
+    .demo-lines { margin-top: 0.5rem; }
+    .demo-line {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.08);
+      margin-bottom: 6px;
+      transform-origin: left;
+      transform: scaleX(0);
+    }
+    .demo-line.is-grow { animation: lineGrow 0.6s var(--ease-out) forwards; }
+    .demo-line:nth-child(2) { width: 85%; }
+    .demo-line:nth-child(3) { width: 65%; }
+    @keyframes lineGrow { to { transform: scaleX(1); } }
+    .demo-progress {
+      margin-top: 0.75rem;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+    .demo-progress__fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+      transition: width 0.8s var(--ease-out);
+    }
+    .demo-status {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      opacity: 0;
+    }
+    .demo-status.is-show { animation: chipIn 0.4s var(--ease-out) forwards; }
+    .demo-status__pulse {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: blink 1s ease-in-out infinite;
+    }
+    .demo-plan-steps { list-style: none; }
+    .demo-plan-steps li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      color: var(--muted);
+      padding: 0.35rem 0;
+      opacity: 0.35;
+      transition: opacity 0.4s, color 0.4s;
+    }
+    .demo-plan-steps li.is-on { opacity: 1; color: var(--cyan); }
+    .demo-plan-steps li.is-done { opacity: 0.7; color: var(--ink); }
+    .demo-plan-steps__icon {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5rem;
+    }
+    .demo-plan-steps li.is-done .demo-plan-steps__icon {
+      background: var(--violet);
+      border-color: var(--violet);
+      color: #fff;
+    }
+    .demo-save-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      flex-wrap: wrap;
+    }
+    .demo-bubble {
+      padding: 0.5rem 0.75rem;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      background: rgba(151,138,255,0.15);
+      border: 1px solid rgba(151,138,255,0.25);
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    .demo-bubble.is-show { animation: chipIn 0.4s var(--ease-out) forwards; }
+    .demo-arrow { color: var(--muted); font-size: 0.8rem; opacity: 0; }
+    .demo-arrow.is-show { animation: chipIn 0.3s var(--ease-out) 0.3s forwards; }
+    .demo-file {
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      background: rgba(104,177,255,0.12);
+      border: 1px solid rgba(104,177,255,0.25);
+      font-size: 0.65rem;
+      color: var(--cyan);
+      opacity: 0;
+      transform: translateX(10px);
+    }
+    .demo-file.is-show { animation: chipIn 0.5s var(--ease-out) 0.6s forwards; }
+    .demo-history {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .demo-history__item {
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.62rem;
+      color: var(--muted);
+      opacity: 0;
+      transform: translateX(-12px);
+    }
+    .demo-history__item.is-show { animation: histIn 0.45s var(--ease-out) forwards; }
+    .demo-history__item.is-active {
+      border-color: rgba(151,138,255,0.4);
+      background: rgba(151,138,255,0.1);
+      color: var(--ink);
+    }
+    @keyframes histIn { to { opacity: 1; transform: translateX(0); } }
+    .demo-type-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 0.9em;
+      background: var(--cyan);
+      margin-left: 1px;
+      vertical-align: text-bottom;
+      animation: cursorBlink 0.8s step-end infinite;
+    }
+    @keyframes cursorBlink { 50% { opacity: 0; } }
+    .demo-orbit {
+      position: absolute;
+      border: 1px solid rgba(151,138,255,0.15);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .demo-orbit--1 { width: 60%; height: 60%; top: 20%; left: 20%; animation: orbitSpin 20s linear infinite; }
+    .demo-orbit--2 { width: 80%; height: 80%; top: 10%; left: 10%; animation: orbitSpin 28s linear infinite reverse; opacity: 0.5; }
+    @keyframes orbitSpin { to { transform: rotate(360deg); } }
+
+    .hero__visual .media-split { width: 100%; }
+    .feat-panel .media-split { margin-top: 0.25rem; }
+
+    /* ── Flow live demo ── */
+    .flow-live {
+      margin-top: 2rem;
+      border-radius: calc(var(--radius) + 4px);
+      overflow: hidden;
+      border: 1px solid rgba(151,138,255,0.2);
+      background: rgba(12,12,20,0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .flow-live__inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+      min-height: 200px;
+      overflow: hidden;
+    }
+    @media (max-width: 700px) { .flow-live__inner { grid-template-columns: 1fr; } }
+    .flow-live__steps {
+      padding: 1.25rem;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .flow-live__step-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.25rem;
+    }
+    .flow-live__step-text {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--ink);
+      min-height: 1.4em;
+      transition: opacity 0.35s;
+    }
+    .flow-live__visual {
+      position: relative;
+      min-height: 180px;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .flow-live__visual .shot-slot {
+      aspect-ratio: 378 / 444;
+    }
+    @media (min-width: 701px) {
+      .flow-live__visual .media-split {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    .flow__line-progress {
+      position: absolute;
+      top: 2rem;
+      left: 12.5%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+      opacity: 0.8;
+      pointer-events: none;
+      transition: width 0.6s var(--ease-out);
+      box-shadow: 0 0 12px var(--glow-violet);
+    }
+
+    /* ── Symbol typing demo ── */
+    .sym-preview {
+      padding: 0;
+      border-radius: var(--radius);
+      border: 1px solid rgba(151,138,255,0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .sym-preview .media-split {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (max-width: 700px) {
+      .sym-preview .media-split { grid-template-columns: minmax(0, 1fr); }
+    }
+    .sym-preview .demo-box {
+      border: none;
+      border-radius: 0;
+      aspect-ratio: unset;
+      min-height: 160px;
+    }
+    .sym-typewriter {
+      position: relative;
+      z-index: 1;
+      padding: 0.85rem 1rem;
+      background: rgba(8,8,15,0.85);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      color: var(--ink);
+    }
+    .sym-typewriter strong { color: var(--cyan); }
+    .sym-typewriter__hint {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+    .sym-key.is-auto-pulse {
+      animation: keyPulse 0.5s var(--ease-out);
+    }
+    @keyframes keyPulse {
+      0% { box-shadow: 0 0 0 0 rgba(151,138,255,0.5); }
+      100% { box-shadow: 0 0 0 10px rgba(151,138,255,0); }
+    }
+    .feat-tab.is-auto-pulse { animation: keyPulse 0.5s var(--ease-out); }
+    .case-card.is-active-case {
+      border-color: rgba(151,138,255,0.45);
+      box-shadow: 0 0 40px var(--glow-violet);
+      transform: translateY(-4px);
+    }
+    .demo-badge {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      z-index: 5;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(151,138,255,0.2);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(151,138,255,0.35);
+      color: var(--violet);
+      max-width: calc(100% - 1rem);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      padding-top: clamp(6rem, 14vw, 9rem);
+      overflow: hidden;
+    }
+    .hero > .wrap {
+      z-index: 2;
+    }
+    .hero__mascot {
+      position: absolute;
+      right: clamp(32px, 16vw, 300px);
+      top: 145px;
+      width: clamp(460px, 34vw, 650px);
+      height: auto;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+      filter: drop-shadow(0 28px 60px rgba(81, 94, 255, 0.2));
+    }
+    @media (max-width: 1180px) {
+      .hero__mascot {
+        right: -70px;
+        top: 120px;
+        width: min(52vw, 540px);
+      }
+    }
+    @media (max-width: 900px) {
+      .hero__mascot {
+        right: -150px;
+        top: 96px;
+        width: 520px;
+        opacity: 0.46;
+      }
+    }
+    @media (max-width: 640px) {
+      .hero__mascot {
+        right: -210px;
+        top: 130px;
+        width: 430px;
+        opacity: 0.32;
+      }
+    }
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem 0.35rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(204, 115, 255, 0.35);
+      background: rgba(204, 115, 255, 0.08);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--magenta);
+      margin-bottom: 1.5rem;
+      animation: pulse-badge 3s ease-in-out infinite;
+    }
+    .hero__badge-pulse {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--magenta);
+      box-shadow: 0 0 8px var(--glow-magenta);
+    }
+    @keyframes pulse-badge {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(204, 115, 255, 0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(204, 115, 255, 0); }
+    }
+    .hero__title {
+      font-family: "Bricolage Grotesque", "Noto Sans SC", sans-serif;
+      font-size: clamp(2.5rem, 7vw, 4.25rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+      text-wrap: balance;
+      max-width: 14ch;
+      margin-bottom: 1.25rem;
+    }
+    .hero__title span {
+      color: var(--cyan);
+    }
+    .hero__sub {
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 42ch;
+      text-wrap: pretty;
+      margin-bottom: 2rem;
+    }
+    .hero__metric {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem 2.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .metric__val {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .metric__val--old { color: rgba(155, 163, 184, 0.5); text-decoration: line-through; text-decoration-thickness: 2px; }
+    .metric__val--new {
+      color: var(--cyan);
+    }
+    .metric__lbl { font-size: 0.8125rem; color: var(--muted); }
+    .hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 3rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.25s var(--ease-out), box-shadow 0.25s, background 0.25s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn--primary {
+      background: linear-gradient(135deg, var(--violet), #7a6ae8);
+      color: #fff;
+      box-shadow: 0 4px 24px var(--glow-violet);
+    }
+    .btn--primary:hover {
+      box-shadow: 0 8px 36px var(--glow-violet);
+      transform: translateY(-2px);
+    }
+    .btn--ghost {
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+    .btn--ghost:hover { background: rgba(255,255,255,0.08); }
+    .hero__visual { margin-top: 1rem; }
+    .case-card .media-split {
+      margin-top: 1rem;
+      max-width: 100%;
+    }
+    .flow__step { overflow: hidden; }
+    .flow__step-shot {
+      aspect-ratio: 378 / 444;
+      margin: 0.85rem auto 0;
+      max-width: 260px;
+    }
+    .flow__step-shot .shot-slot__img,
+    .flow-live__visual .shot-slot__img {
+      object-fit: contain;
+    }
+    .flow__step-shot.has-image,
+    .flow-live__visual .shot-slot.has-image {
+      background: #f7f6fb;
+    }
+
+    /* ── Section headers ── */
+    .sec-head { margin-bottom: clamp(2rem, 5vw, 3rem); }
+    .sec-head__tag {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.75rem;
+    }
+    .sec-head__title {
+      font-family: "Bricolage Grotesque", "Noto Sans SC", sans-serif;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+      max-width: 20ch;
+    }
+    .sec-head__desc {
+      margin-top: 0.75rem;
+      color: var(--muted);
+      max-width: 48ch;
+      font-size: 1rem;
+      text-wrap: pretty;
+    }
+
+    /* ── Flow steps ── */
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      position: relative;
+    }
+    @media (max-width: 800px) {
+      .flow { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .flow { grid-template-columns: 1fr; }
+    }
+    .flow__line {
+      position: absolute;
+      top: 2rem;
+      left: 12.5%;
+      right: 12.5%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--violet), var(--cyan), var(--magenta));
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    @media (max-width: 800px) { .flow__line { display: none; } }
+    .flow__step {
+      position: relative;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: border-color 0.3s, transform 0.3s var(--ease-out), box-shadow 0.3s;
+      cursor: default;
+    }
+    .flow__step.is-active {
+      border-color: rgba(151, 138, 255, 0.5);
+      box-shadow: 0 0 32px var(--glow-violet);
+      transform: translateY(-4px);
+    }
+    .flow__num {
+      width: 2rem; height: 2rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 0.875rem;
+      background: linear-gradient(135deg, rgba(151,138,255,0.2), rgba(104,177,255,0.15));
+      color: var(--violet);
+      margin-bottom: 1rem;
+    }
+    .flow__step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.35rem; }
+    .flow__step p { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Feature tabs ── */
+    .features {
+      display: grid;
+      grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+    @media (max-width: 800px) {
+      .features { grid-template-columns: 1fr; }
+    }
+    .feat-tabs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    @media (max-width: 800px) {
+      .feat-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        scrollbar-width: none;
+      }
+      .feat-tabs::-webkit-scrollbar { display: none; }
+    }
+    .feat-tab {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem 1.1rem;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.25s, border-color 0.25s, color 0.25s;
+      flex-shrink: 0;
+      min-width: 200px;
+    }
+    .feat-tab:hover { background: rgba(255,255,255,0.03); color: var(--ink); }
+    .feat-tab.is-active {
+      background: rgba(151, 138, 255, 0.08);
+      border-color: rgba(151, 138, 255, 0.45);
+      color: var(--ink);
+    }
+    .feat-tab__icon {
+      width: 2rem; height: 2rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      background: rgba(151, 138, 255, 0.12);
+    }
+    .feat-tab__title { font-size: 0.875rem; font-weight: 600; display: block; }
+    .feat-tab__hint { font-size: 0.75rem; opacity: 0.7; display: block; margin-top: 0.15rem; }
+
+    .feat-panel {
+      display: none;
+      animation: fadeUp 0.45s var(--ease-out);
+      min-width: 0;
+    }
+    .feat-panels { min-width: 0; max-width: 100%; overflow: hidden; }
+    .feat-panel.is-active { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .feat-panel__card {
+      padding: clamp(1.25rem, 3vw, 2rem);
+      border-radius: calc(var(--radius) + 4px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .feat-panel__card h3 {
+      font-size: clamp(1.25rem, 3vw, 1.5rem);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .feat-panel__card > p {
+      color: var(--muted);
+      font-size: 0.9375rem;
+      margin-bottom: 1.5rem;
+      max-width: 52ch;
+    }
+    .feat-panel__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .tag {
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: rgba(104, 177, 255, 0.1);
+      color: var(--cyan);
+      border: 1px solid rgba(104, 177, 255, 0.2);
+    }
+    .feat-panel__media {
+      margin-top: 0.5rem;
+      max-width: 100%;
+    }
+    @media (min-width: 901px) {
+      .feat-panel__media.media-split {
+        grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.35fr);
+      }
+    }
+    .feat-panel__media .demo-box {
+      order: 2;
+      aspect-ratio: unset;
+      min-height: 240px;
+      align-self: stretch;
+    }
+    .feat-panel__media .shot-slot {
+      order: 1;
+      aspect-ratio: 583 / 945;
+      max-width: 340px;
+      justify-self: start;
+      background: #f7f6fb;
+    }
+    .feat-panel__media .shot-slot__img {
+      object-fit: contain;
+    }
+    .feat-panel__media .media-split__label span:first-child::before {
+      content: "产品截图";
+      font-size: 0.72rem;
+    }
+    .feat-panel__media .media-split__label span:first-child {
+      font-size: 0;
+    }
+    .feat-panel__media .media-split__label span:last-child::before {
+      content: "动效演示";
+      font-size: 0.72rem;
+    }
+    .feat-panel__media .media-split__label span:last-child {
+      font-size: 0;
+    }
+    @media (max-width: 900px) {
+      .feat-panel__media .shot-slot {
+        justify-self: center;
+        width: min(100%, 340px);
+      }
+    }
+
+    /* ── Symbols keyboard ── */
+    .symbols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+    @media (max-width: 800px) { .symbols { grid-template-columns: 1fr; } }
+    .sym-keys {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+    .sym-key {
+      padding: 1.25rem;
+      border-radius: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.25s, transform 0.25s var(--ease-out), box-shadow 0.25s;
+      text-align: left;
+    }
+    .sym-key:hover, .sym-key.is-active {
+      border-color: rgba(151, 138, 255, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+    }
+    .sym-key.is-active { background: rgba(151, 138, 255, 0.08); }
+    .sym-key__char {
+      font-family: "Bricolage Grotesque", monospace;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--violet);
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .sym-key__name { font-size: 0.875rem; font-weight: 600; display: block; }
+    .sym-key__desc { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; display: block; }
+
+    /* ── Inspiration queries ── */
+    .queries {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(280px, 0.72fr);
+      gap: clamp(1.5rem, 4vw, 3.5rem);
+      align-items: center;
+    }
+    .queries__copy {
+      max-width: 620px;
+    }
+    .queries__copy .sec-head {
+      margin-bottom: 1.5rem;
+    }
+    .query-bubbles {
+      display: grid;
+      gap: 0.7rem;
+      max-width: 560px;
+    }
+    .query-bubble {
+      width: fit-content;
+      max-width: min(100%, 520px);
+      padding: 0.82rem 1rem;
+      border-radius: 16px 16px 16px 4px;
+      background: linear-gradient(135deg, rgba(151, 138, 255, 0.18), rgba(104, 177, 255, 0.09));
+      border: 1px solid rgba(151, 138, 255, 0.28);
+      color: var(--ink);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+    }
+    .query-bubble:nth-child(even) {
+      margin-left: clamp(1rem, 5vw, 3rem);
+      border-color: rgba(104, 177, 255, 0.24);
+      background: linear-gradient(135deg, rgba(104, 177, 255, 0.15), rgba(151, 138, 255, 0.09));
+    }
+    .query-phone-wrap {
+      justify-self: center;
+      width: min(100%, 360px);
+    }
+    .query-phone {
+      --query-phone-height: clamp(500px, 58vw, 640px);
+      --query-screen-height: calc(var(--query-phone-height) - 2.7rem);
+      height: var(--query-phone-height);
+      border-radius: 28px;
+      padding: 0.55rem;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)),
+        rgba(8, 8, 15, 0.86);
+      border: 1px solid rgba(151, 138, 255, 0.32);
+      box-shadow: 0 28px 80px rgba(0,0,0,0.42), 0 0 42px rgba(104, 177, 255, 0.16);
+      overflow: hidden;
+    }
+    .query-phone__bar {
+      height: 2.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.65rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .query-phone__dots {
+      display: flex;
+      gap: 0.32rem;
+    }
+    .query-phone__dots span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(151, 138, 255, 0.55);
+    }
+    .query-phone__dots span:nth-child(2) { background: rgba(104, 177, 255, 0.55); }
+    .query-phone__dots span:nth-child(3) { background: rgba(204, 115, 255, 0.55); }
+    .query-phone__screen {
+      position: relative;
+      height: var(--query-screen-height);
+      border-radius: 22px;
+      overflow: hidden;
+      background: #f5f7fb;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .query-phone__screen::before,
+    .query-phone__screen::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 72px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .query-phone__screen::before {
+      top: 0;
+      background: linear-gradient(to bottom, rgba(245,247,251,0.98), rgba(245,247,251,0));
+    }
+    .query-phone__screen::after {
+      bottom: 0;
+      background: linear-gradient(to top, rgba(245,247,251,0.98), rgba(245,247,251,0));
+    }
+    .query-phone__img {
+      display: block;
+      width: 100%;
+      height: auto;
+      transform: translateY(0);
+      animation: queryScroll 64s ease-in-out infinite;
+      will-change: transform;
+    }
+    .query-phone:hover .query-phone__img {
+      animation-play-state: paused;
+    }
+    @keyframes queryScroll {
+      0%, 10% { transform: translateY(0); }
+      76%, 88% { transform: translateY(calc(-100% + var(--query-screen-height))); }
+      100% { transform: translateY(0); }
+    }
+    @media (max-width: 800px) {
+      .queries {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+      .query-phone-wrap {
+        width: min(100%, 340px);
+      }
+      .query-phone {
+        --query-phone-height: min(560px, 138vw);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .query-phone__img {
+        animation: none;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Plan mode ── */
+    .plan-demo {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2rem;
+      align-items: stretch;
+      min-width: 0;
+    }
+    .plan-demo > * { min-width: 0; max-width: 100%; }
+    @media (max-width: 800px) { .plan-demo { grid-template-columns: 1fr; } }
+    .plan-card {
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .plan-card h4 {
+      font-size: 0.8125rem;
+      color: var(--magenta);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .plan-steps { list-style: none; }
+    .plan-steps li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.875rem;
+      color: var(--muted);
+      transition: color 0.3s;
+    }
+    .plan-steps li:last-child { border-bottom: none; }
+    .plan-steps li.is-done { color: var(--ink); }
+    .plan-steps li.is-running { color: var(--cyan); }
+    .plan-steps__dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      margin-top: 0.45rem;
+      flex-shrink: 0;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .plan-steps li.is-done .plan-steps__dot {
+      background: var(--violet);
+      box-shadow: 0 0 8px var(--glow-violet);
+    }
+    .plan-steps li.is-running .plan-steps__dot {
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--glow-cyan);
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .plan-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .plan-actions button {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .plan-actions button:hover { background: rgba(255,255,255,0.08); }
+    .plan-actions button:first-child {
+      background: rgba(151, 138, 255, 0.2);
+      border-color: rgba(151, 138, 255, 0.4);
+    }
+
+    /* ── Stats band ── */
+    .stats-band {
+      padding: 2.5rem;
+      border-radius: calc(var(--radius) + 4px);
+      background: linear-gradient(135deg, rgba(151,138,255,0.1), rgba(104,177,255,0.06));
+      border: 1px solid rgba(151, 138, 255, 0.2);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 2rem;
+      text-align: center;
+    }
+    .stats-band__item strong {
+      display: block;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--violet);
+    }
+    .stats-band__item span { font-size: 0.8125rem; color: var(--muted); }
+
+    /* ── Cases ── */
+    .cases {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .case-card {
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transition: transform 0.3s var(--ease-out), border-color 0.3s;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .case-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(104, 177, 255, 0.3);
+    }
+    .case-card__type {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--magenta);
+      margin-bottom: 0.75rem;
+    }
+    .case-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .case-card p { font-size: 0.8125rem; color: var(--muted); line-height: 1.55; margin-bottom: 0; }
+    .case-card .shot-slot--card {
+      aspect-ratio: 3 / 4;
+      border-radius: 10px;
+      background: rgba(8,8,15,0.9);
+    }
+    .shot-slot__video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #08080f;
+    }
+    .shot-slot--video .shot-slot__ph { display: none; }
+
+    /* ── CTA ── */
+    .cta {
+      text-align: center;
+      padding: clamp(3rem, 8vw, 5rem);
+      border-radius: calc(var(--radius) + 8px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% 120%, rgba(151,138,255,0.15), transparent);
+      pointer-events: none;
+    }
+    .cta h2 {
+      font-family: "Bricolage Grotesque", "Noto Sans SC", sans-serif;
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+    .cta p {
+      color: var(--muted);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 2rem 0 3rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(155, 163, 184, 0.6);
+    }
+
+    /* ── Reveal ── */
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+      }
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient__orb ambient__orb--1"></div>
+    <div class="ambient__orb ambient__orb--2"></div>
+    <div class="ambient__orb ambient__orb--3"></div>
+    <div class="ambient__grid"></div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <div class="wrap nav__inner">
+      <div class="nav__logo">
+        <span class="nav__logo-dot"></span>
+        AI 经纪人 2.0
+      </div>
+      <ul class="nav__links">
+        <li><a href="#flow">上手流程</a></li>
+        <li><a href="#features">核心能力</a></li>
+        <li><a href="#symbols">快捷符号</a></li>
+        <li><a href="#queries">灵感 Query</a></li>
+        <li><a href="#plan">Plan 模式</a></li>
+        <li><a href="#cases">创作者故事</a></li>
+      </ul>
+      <a class="nav__cta" href="#cta">立即体验</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <img class="hero__mascot" src="images/default.png" alt="" aria-hidden="true" />
+      <div class="wrap">
+        <div class="hero__badge reveal">
+          <span class="hero__badge-pulse"></span>
+          2.0 全新升级 · 喜马拉雅创作者专属
+        </div>
+        <h1 class="hero__title reveal">
+          从找角度到初稿<br /><span>2 小时变 20 分钟</span>
+        </h1>
+        <p class="hero__sub reveal">
+          不是多一个聊天框，而是嵌进你日常创作流程的智能搭档——懂热点、懂专辑、懂你的文档。
+        </p>
+        <div class="hero__metric reveal">
+          <div class="metric">
+            <span class="metric__val metric__val--old">2h</span>
+            <span class="metric__lbl">传统创作耗时</span>
+          </div>
+          <div class="metric">
+            <span class="metric__val metric__val--new" data-count="20">20</span>
+            <span class="metric__lbl">分钟出初稿</span>
+          </div>
+          <div class="metric">
+            <span class="metric__val metric__val--new" data-count="5">5-10</span>
+            <span class="metric__lbl">小时/周 可节省</span>
+          </div>
+        </div>
+        <div class="hero__actions reveal">
+          <a class="btn btn--primary" href="#flow">30 秒上手</a>
+          <a class="btn btn--ghost" href="#features">探索核心能力</a>
+        </div>
+        <div class="hero__visual reveal">
+          <div class="media-split media-split--hero">
+            <div class="media-split__label media-split__label--shot"><span>产品截图</span></div>
+            <div class="media-split__label media-split__label--demo"><span>使用演示</span></div>
+            <div class="shot-slot shot-slot--wide" data-shot="hero">
+              <img class="shot-slot__img" src="images/hero.png" alt="AI 经纪人 2.0 产品主界面" />
+              <div class="shot-slot__ph">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span class="shot-slot__label">产品主界面截图</span>
+                <code class="shot-slot__path">images/hero.png</code>
+              </div>
+            </div>
+            <div class="demo-box" data-stage="hero" data-anim="hero">
+              <div class="demo-box__mesh"></div>
+              <div class="demo-box__blur"></div>
+              <div class="demo-box__shine"></div>
+              <span class="demo-badge">自动演示</span>
+              <span class="glass-float glass-float--mag" style="top:12%;left:8%">2h → 20min</span>
+              <span class="glass-float glass-float--cyan" style="top:20%;right:10%"># 热点</span>
+              <div class="demo-layer is-active">
+                <div class="demo-ui">
+                  <div class="demo-ui__bar"><span class="demo-ui__dot demo-ui__dot--r"></span><span class="demo-ui__dot demo-ui__dot--y"></span><span class="demo-ui__dot demo-ui__dot--g"></span></div>
+                  <div class="demo-chips"></div>
+                  <div class="demo-lines"><div class="demo-line"></div><div class="demo-line"></div><div class="demo-line"></div></div>
+                  <div class="demo-progress"><div class="demo-progress__fill"></div></div>
+                  <div class="demo-status"><span class="demo-status__pulse"></span><span>正在生成初稿…</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flow -->
+    <section id="flow">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div class="sec-head__tag">30 秒上手</div>
+          <h2 class="sec-head__title">四步开写，不用憋提示词</h2>
+          <p class="sec-head__desc">选入口 → 说需求 → 看 AI 执行 → 文档库拿成稿 · 自动演示中</p>
+        </div>
+        <div class="flow reveal" id="flowSteps">
+          <div class="flow__line" aria-hidden="true"></div>
+          <div class="flow__line-progress" id="flowLineProgress" style="width:0%"></div>
+          <div class="flow__step is-active" data-step="0">
+            <div class="flow__num">01</div>
+            <h3>进入</h3>
+            <p>从热点 / 专辑 / 创作中心打开，业务信息自动带入</p>
+            <div class="shot-slot shot-slot--mini flow__step-shot" data-shot="flow-1">
+              <img class="shot-slot__img" src="images/flow-step-1.png" alt="步骤1：进入" />
+              <div class="shot-slot__ph"><code class="shot-slot__path">images/flow-step-1.png</code></div>
+            </div>
+          </div>
+          <div class="flow__step" data-step="1">
+            <div class="flow__num">02</div>
+            <h3>描述</h3>
+            <p>直接打字或用模板选好热点、专辑、风格</p>
+            <div class="shot-slot shot-slot--mini flow__step-shot" data-shot="flow-2">
+              <img class="shot-slot__img" src="images/flow-step-2.png" alt="步骤2：描述" />
+              <div class="shot-slot__ph"><code class="shot-slot__path">images/flow-step-2.png</code></div>
+            </div>
+          </div>
+          <div class="flow__step" data-step="2">
+            <div class="flow__num">03</div>
+            <h3>等待</h3>
+            <p>执行过程全程可见，复杂任务先确认计划</p>
+            <div class="shot-slot shot-slot--mini flow__step-shot" data-shot="flow-3">
+              <img class="shot-slot__img" src="images/flow-step-3.png" alt="步骤3：等待" />
+              <div class="shot-slot__ph"><code class="shot-slot__path">images/flow-step-3.png</code></div>
+            </div>
+          </div>
+          <div class="flow__step" data-step="3">
+            <div class="flow__num">04</div>
+            <h3>取用</h3>
+            <p>文档库查看编辑，稿子变成可复用资产</p>
+            <div class="shot-slot shot-slot--mini flow__step-shot" data-shot="flow-4">
+              <img class="shot-slot__img" src="images/flow-step-4.png" alt="步骤4：取用" />
+              <div class="shot-slot__ph"><code class="shot-slot__path">images/flow-step-4.png</code></div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-live reveal" id="flowLive">
+          <div class="flow-live__inner">
+            <div class="flow-live__steps">
+              <div class="flow-live__step-label">当前步骤</div>
+              <div class="flow-live__step-text" id="flowLiveText">从热点入口进入，业务信息自动带入</div>
+            </div>
+            <div class="flow-live__visual">
+              <div class="media-split">
+                <div class="shot-slot" id="flowShot" data-shot="flow-live">
+                  <img class="shot-slot__img" id="flowShotImg" src="images/flow-step-1.png" alt="当前步骤截图" />
+                  <div class="shot-slot__ph" id="flowShotPh">
+                    <span class="shot-slot__label">步骤截图</span>
+                    <code class="shot-slot__path" id="flowShotPath">images/flow-step-1.png</code>
+                  </div>
+                </div>
+                <div class="demo-box demo-box--fill" data-stage="flow">
+                  <div class="demo-box__mesh"></div>
+                  <div class="demo-box__blur"></div>
+                  <div class="demo-box__shine"></div>
+                  <span class="demo-badge">步骤演示</span>
+                  <div class="demo-layer is-active">
+                    <div class="demo-ui" id="flowDemoUi"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div class="sec-head__tag">核心能力</div>
+          <h2 class="sec-head__title">六大场景</h2>
+          <p class="sec-head__desc">面向创作者从追热点、读素材、定计划、看过程，到保存成稿和接续历史的完整创作工作流。</p>
+        </div>
+        <div class="features reveal">
+          <div class="feat-tabs" role="tablist">
+            <button class="feat-tab is-active" role="tab" data-tab="hot" aria-selected="true">
+              <span class="feat-tab__icon">#</span>
+              <span>
+                <span class="feat-tab__title">热点快写</span>
+                <span class="feat-tab__hint">1 分钟开写，抢时效</span>
+              </span>
+            </button>
+            <button class="feat-tab" role="tab" data-tab="doc">
+              <span class="feat-tab__icon">+</span>
+              <span>
+                <span class="feat-tab__title">素材即读</span>
+                <span class="feat-tab__hint">上传即提炼，你定方向</span>
+              </span>
+            </button>
+            <button class="feat-tab" role="tab" data-tab="plan">
+              <span class="feat-tab__icon">◎</span>
+              <span>
+                <span class="feat-tab__title">Plan 模式</span>
+                <span class="feat-tab__hint">先计划再执行，敢放手</span>
+              </span>
+            </button>
+            <button class="feat-tab" role="tab" data-tab="visible">
+              <span class="feat-tab__icon">◉</span>
+              <span>
+                <span class="feat-tab__title">过程可视</span>
+                <span class="feat-tab__hint">黑盒变透明，用得安心</span>
+              </span>
+            </button>
+            <button class="feat-tab" role="tab" data-tab="save">
+              <span class="feat-tab__icon">↓</span>
+              <span>
+                <span class="feat-tab__title">一句话保存</span>
+                <span class="feat-tab__hint">聊到哪，存到哪</span>
+              </span>
+            </button>
+            <button class="feat-tab" role="tab" data-tab="history">
+              <span class="feat-tab__icon">↺</span>
+              <span>
+                <span class="feat-tab__title">历史续写</span>
+                <span class="feat-tab__hint">中断不怕，上下文全恢复</span>
+              </span>
+            </button>
+          </div>
+
+          <div class="feat-panels">
+            <div class="feat-panel is-active" id="panel-hot" role="tabpanel">
+              <div class="feat-panel__card">
+                <h3>热点来了，窗口不等人</h3>
+                <p># 选热点 + & 选专辑 + 模板定风格，启动成本从 30 分钟降到 1 分钟。</p>
+                <div class="feat-panel__tags">
+                  <span class="tag">近 3 天 Top10 热点</span>
+                  <span class="tag">自动对齐专辑调性</span>
+                  <span class="tag">10 分钟出初稿</span>
+                </div>
+                <div class="media-split feat-panel__media">
+                  <div class="media-split__label"><span>产品截图</span><span>动效演示</span></div>
+                  <div class="shot-slot" data-shot="feature-hot">
+                    <img class="shot-slot__img" src="images/feature-hot.png" alt="热点快写界面" />
+                    <div class="shot-slot__ph">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span class="shot-slot__label">热点快写截图</span>
+                      <code class="shot-slot__path">images/feature-hot.png</code>
+                    </div>
+                  </div>
+                  <div class="demo-box" data-stage="feature-hot" data-anim="hot">
+                    <div class="demo-box__mesh"></div>
+                    <div class="demo-box__blur"></div>
+                    <div class="demo-box__shine"></div>
+                    <span class="demo-badge">热点快写</span>
+                    <div class="demo-layer is-active">
+                      <div class="demo-ui">
+                        <div class="demo-ui__bar"><span class="demo-ui__dot demo-ui__dot--r"></span><span class="demo-ui__dot demo-ui__dot--y"></span><span class="demo-ui__dot demo-ui__dot--g"></span></div>
+                        <div class="demo-chips"></div>
+                        <div class="demo-lines"><div class="demo-line"></div><div class="demo-line"></div><div class="demo-line"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="feat-panel" id="panel-doc" role="tabpanel">
+              <div class="feat-panel__card">
+                <h3>资料在手，就是下不了笔</h3>
+                <p>+ 上传 txt 素材，AI 读要点你来定方向，省去 1 小时整理时间。</p>
+                <div class="feat-panel__tags">
+                  <span class="tag">本地上传</span>
+                  <span class="tag">文档库复用</span>
+                  <span class="tag">文档块可视化</span>
+                </div>
+                <div class="media-split feat-panel__media">
+                  <div class="media-split__label"><span>产品截图</span><span>动效演示</span></div>
+                  <div class="shot-slot" data-shot="feature-doc">
+                    <img class="shot-slot__img" src="images/feature-doc.png" alt="txt 素材上传界面" />
+                    <div class="shot-slot__ph">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span class="shot-slot__label">txt 素材上传截图</span>
+                      <code class="shot-slot__path">images/feature-doc.png</code>
+                    </div>
+                  </div>
+                  <div class="demo-box" data-stage="feature-doc" data-anim="doc">
+                    <div class="demo-box__mesh"></div>
+                    <div class="demo-box__blur"></div>
+                    <div class="demo-box__shine"></div>
+                    <span class="demo-badge">素材即读</span>
+                    <div class="demo-layer is-active">
+                      <div class="demo-ui">
+                        <div class="demo-ui__bar"><span class="demo-ui__dot demo-ui__dot--r"></span><span class="demo-ui__dot demo-ui__dot--y"></span><span class="demo-ui__dot demo-ui__dot--g"></span></div>
+                        <div class="demo-chips"></div>
+                        <div class="demo-progress"><div class="demo-progress__fill"></div></div>
+                        <div class="demo-status"><span class="demo-status__pulse"></span><span>AI 正在读取文档要点…</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="feat-panel" id="panel-plan" role="tabpanel">
+              <div class="feat-panel__card">
+                <h3>长文报告，先看计划再执行</h3>
+                <p>复杂任务不再一把梭——确认计划、逐步推进、中途可纠偏，返工率大幅降低。</p>
+                <div class="feat-panel__tags">
+                  <span class="tag">任务目标</span>
+                  <span class="tag">执行步骤</span>
+                  <span class="tag">风险提示</span>
+                </div>
+                <div class="media-split feat-panel__media">
+                  <div class="media-split__label"><span>产品截图</span><span>动效演示</span></div>
+                  <div class="shot-slot" data-shot="feature-plan">
+                    <img class="shot-slot__img" src="images/feature-plan.png" alt="Plan 模式界面" />
+                    <div class="shot-slot__ph">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span class="shot-slot__label">Plan 模式截图</span>
+                      <code class="shot-slot__path">images/feature-plan.png</code>
+                    </div>
+                  </div>
+                  <div class="demo-box" data-stage="feature-plan" data-anim="plan">
+                    <div class="demo-box__mesh"></div>
+                    <div class="demo-box__blur"></div>
+                    <div class="demo-box__shine"></div>
+                    <span class="demo-badge">Plan 模式</span>
+                    <div class="demo-layer is-active">
+                      <div class="demo-ui">
+                        <ol class="demo-plan-steps" data-plan-steps></ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="feat-panel" id="panel-visible" role="tabpanel">
+              <div class="feat-panel__card">
+                <h3>执行过程全程可见</h3>
+                <p>搜索、写稿、改稿实时展示进度——知道 AI 在干什么、干到哪了，敢放心去泡杯咖啡。</p>
+                <div class="feat-panel__tags">
+                  <span class="tag">步骤进度</span>
+                  <span class="tag">可暂停/终止</span>
+                  <span class="tag">搜索结果可展开</span>
+                </div>
+                <div class="media-split feat-panel__media">
+                  <div class="media-split__label"><span>产品截图</span><span>动效演示</span></div>
+                  <div class="shot-slot" data-shot="feature-visible">
+                    <img class="shot-slot__img" src="images/feature-visible.png" alt="执行过程可视化" />
+                    <div class="shot-slot__ph">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span class="shot-slot__label">过程可视化截图</span>
+                      <code class="shot-slot__path">images/feature-visible.png</code>
+                    </div>
+                  </div>
+                  <div class="demo-box" data-stage="feature-visible" data-anim="visible">
+                    <div class="demo-box__mesh"></div>
+                    <div class="demo-box__blur"></div>
+                    <div class="demo-box__shine"></div>
+                    <span class="demo-badge">过程可视</span>
+                    <div class="demo-layer is-active">
+                      <div class="demo-ui">
+                        <div class="demo-status"><span class="demo-status__pulse"></span><span>正在执行第 2/5 步：搜索相关资料</span></div>
+                        <div class="demo-progress" style="margin-top:0.75rem"><div class="demo-progress__fill"></div></div>
+                        <div class="demo-lines" style="margin-top:0.75rem"><div class="demo-line"></div><div class="demo-line"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="feat-panel" id="panel-save" role="tabpanel">
+              <div class="feat-panel__card">
+                <h3>满意了？一句话存成 md</h3>
+                <p>说「帮我保存到文件」，AI 自动写入文档库——灵感不流失，格式通用随时接着写。</p>
+                <div class="feat-panel__tags">
+                  <span class="tag">自然语言指令</span>
+                  <span class="tag">Markdown 格式</span>
+                  <span class="tag">自动归类</span>
+                </div>
+                <div class="media-split feat-panel__media">
+                  <div class="media-split__label"><span>产品截图</span><span>动效演示</span></div>
+                  <div class="shot-slot" data-shot="feature-save">
+                    <img class="shot-slot__img" src="images/feature-save.png" alt="保存到文件" />
+                    <div class="shot-slot__ph">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span class="shot-slot__label">保存功能截图</span>
+                      <code class="shot-slot__path">images/feature-save.png</code>
+                    </div>
+                  </div>
+                  <div class="demo-box" data-stage="feature-save" data-anim="save">
+                    <div class="demo-box__mesh"></div>
+                    <div class="demo-box__blur"></div>
+                    <div class="demo-box__shine"></div>
+                    <span class="demo-badge">一句话保存</span>
+                    <div class="demo-layer is-active">
+                      <div class="demo-ui">
+                        <div class="demo-save-flow">
+                          <div class="demo-bubble">帮我保存到文件</div>
+                          <div class="demo-arrow">→</div>
+                          <div class="demo-file">初稿.md ✓</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="feat-panel" id="panel-history" role="tabpanel">
+              <div class="feat-panel__card">
+                <h3>写到一半？隔天接着来</h3>
+                <p>历史对话一键恢复——消息、计划进度、引用文档、已生成稿件全部找回。</p>
+                <div class="feat-panel__tags">
+                  <span class="tag">AI 自动总结标题</span>
+                  <span class="tag">完整上下文</span>
+                  <span class="tag">文档库统一管理</span>
+                </div>
+                <div class="media-split feat-panel__media">
+                  <div class="media-split__label"><span>产品截图</span><span>动效演示</span></div>
+                  <div class="shot-slot" data-shot="feature-history">
+                    <img class="shot-slot__img" src="images/feature-history.png" alt="历史对话恢复" />
+                    <div class="shot-slot__ph">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span class="shot-slot__label">历史对话截图</span>
+                      <code class="shot-slot__path">images/feature-history.png</code>
+                    </div>
+                  </div>
+                  <div class="demo-box" data-stage="feature-history" data-anim="history">
+                    <div class="demo-box__mesh"></div>
+                    <div class="demo-box__blur"></div>
+                    <div class="demo-box__shine"></div>
+                    <span class="demo-badge">历史续写</span>
+                    <div class="demo-layer is-active">
+                      <div class="demo-ui">
+                        <div class="demo-history" data-history-list></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Symbols -->
+    <section id="symbols">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div class="sec-head__tag">快捷符号</div>
+          <h2 class="sec-head__title">四个符号，记住就能用</h2>
+          <p class="sec-head__desc">@ 选助手 · # 选热点 · & 选专辑 · + 选文档</p>
+        </div>
+        <div class="symbols reveal">
+          <div class="sym-keys" id="symKeys">
+            <button class="sym-key is-active" data-sym="at">
+              <span class="sym-key__char">@</span>
+              <span class="sym-key__name">选经纪人</span>
+              <span class="sym-key__desc">自动匹配专属创作模板</span>
+            </button>
+            <button class="sym-key" data-sym="hash">
+              <span class="sym-key__char">#</span>
+              <span class="sym-key__name">选热点</span>
+              <span class="sym-key__desc">近 3 天 Top10，信息自动带入</span>
+            </button>
+            <button class="sym-key" data-sym="amp">
+              <span class="sym-key__char">&</span>
+              <span class="sym-key__name">选专辑</span>
+              <span class="sym-key__desc">对齐账号调性，内容更贴合</span>
+            </button>
+            <button class="sym-key" data-sym="plus">
+              <span class="sym-key__char">+</span>
+              <span class="sym-key__name">选文档</span>
+              <span class="sym-key__desc">上传 txt 或从文档库引用素材</span>
+            </button>
+          </div>
+          <div class="sym-preview" id="symPreview">
+            <div class="media-split">
+              <div class="shot-slot" id="symShot" data-shot="symbol">
+                <img class="shot-slot__img" id="symShotImg" src="images/symbol-at.png" alt="符号截图" />
+                <div class="shot-slot__ph" id="symShotPh">
+                  <span class="shot-slot__label">符号操作截图</span>
+                  <code class="shot-slot__path" id="symShotPath">images/symbol-at.png</code>
+                </div>
+              </div>
+              <div class="demo-box demo-box--tall" data-stage="symbols">
+                <div class="demo-box__mesh"></div>
+                <div class="demo-box__blur"></div>
+                <div class="demo-box__shine"></div>
+                <div class="demo-orbit demo-orbit--1"></div>
+                <span class="demo-badge">符号演示</span>
+                <span class="glass-float glass-float--violet" id="symFloat" style="top:15%;left:10%;right:10%;text-align:center">@</span>
+              </div>
+            </div>
+            <div class="sym-typewriter">
+              <span id="symTypeText"></span><span class="demo-type-cursor"></span>
+              <div class="sym-typewriter__hint" id="symTypeHint">自动演示输入体验</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inspiration Query -->
+    <section id="queries">
+      <div class="wrap">
+        <div class="queries reveal">
+          <div class="queries__copy">
+            <div class="sec-head">
+              <div class="sec-head__tag">灵感 Query</div>
+              <h2 class="sec-head__title">灵感 Query：这样问，创作马上开始</h2>
+              <p class="sec-head__desc">不需要写复杂 Prompt，直接说出你的创作需求。AI 经纪人可以帮你找热点、定方向、写初稿、改风格、存文档。</p>
+            </div>
+            <div class="query-bubbles" aria-label="灵感 Query 示例">
+              <div class="query-bubble">帮我找一下最近适合我专辑的热点</div>
+              <div class="query-bubble">用这个热点，帮我生成 3 个选题方向</div>
+              <div class="query-bubble">我选观点评论型，写一版 800 字口播稿</div>
+              <div class="query-bubble">开头再犀利一点，更适合吸引用户听下去</div>
+              <div class="query-bubble">把这段资料整理成创作提纲</div>
+              <div class="query-bubble">帮我把这版内容保存成文档</div>
+              <div class="query-bubble">接着上次那篇稿子继续写</div>
+            </div>
+          </div>
+          <div class="query-phone-wrap" aria-label="灵感 Query 聊天演示">
+            <div class="query-phone">
+              <div class="query-phone__bar">
+                <span>Query 演示</span>
+                <span class="query-phone__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              </div>
+              <div class="query-phone__screen">
+                <img class="query-phone__img" src="images/query-demo-long.png" alt="灵感 Query 聊天长截图演示" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plan demo -->
+    <section id="plan">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div class="sec-head__tag">Plan 模式</div>
+          <h2 class="sec-head__title">复杂任务，你始终掌控方向</h2>
+          <p class="sec-head__desc">计划自动循环演示，模拟复杂任务逐步推进</p>
+        </div>
+        <div class="plan-demo reveal" id="planSection">
+          <div class="plan-card">
+            <h4>◎ 执行计划 <span style="opacity:0.5;font-weight:400;margin-left:0.5rem">自动演示中</span></h4>
+            <ol class="plan-steps" id="planSteps">
+              <li data-plan="0"><span class="plan-steps__dot"></span>分析资料要点，提炼核心观点</li>
+              <li data-plan="1"><span class="plan-steps__dot"></span>确定文章结构与受众定位</li>
+              <li data-plan="2"><span class="plan-steps__dot"></span>撰写正文初稿（约 1500 字）</li>
+              <li data-plan="3"><span class="plan-steps__dot"></span>生成标题备选并保存到文档库</li>
+            </ol>
+            <div class="plan-actions">
+              <button type="button" id="planRun">暂停演示</button>
+              <button type="button" id="planReset">重置</button>
+            </div>
+          </div>
+          <div class="media-split media-split--stack">
+            <div class="shot-slot" data-shot="plan-demo">
+              <img class="shot-slot__img" src="images/plan-demo.png" alt="Plan 模式演示" />
+              <div class="shot-slot__ph">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <span class="shot-slot__label">Plan 模式演示截图</span>
+                <code class="shot-slot__path">images/plan-demo.png</code>
+              </div>
+            </div>
+            <div class="demo-box" data-stage="plan-demo" data-anim="plan-full">
+              <div class="demo-box__mesh"></div>
+              <div class="demo-box__blur"></div>
+              <div class="demo-box__shine"></div>
+              <span class="demo-badge">Plan 执行中</span>
+              <div class="demo-layer is-active">
+                <div class="demo-ui">
+                  <ol class="demo-plan-steps" id="planDemoSteps"></ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section>
+      <div class="wrap reveal">
+        <div class="stats-band">
+          <div class="stats-band__item">
+            <strong>30→1</strong>
+            <span>分钟 热点启动成本</span>
+          </div>
+          <div class="stats-band__item">
+            <strong>80%</strong>
+            <span>资料整理时间节省</span>
+          </div>
+          <div class="stats-band__item">
+            <strong>10s</strong>
+            <span>一句话保存成稿</span>
+          </div>
+          <div class="stats-band__item">
+            <strong>1min</strong>
+            <span>历史对话恢复续写</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cases -->
+    <section id="cases">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <div class="sec-head__tag">创作者故事</div>
+          <h2 class="sec-head__title">他们已经在这样用</h2>
+        </div>
+        <div class="cases reveal" id="casesCarousel">
+          <article class="case-card is-active-case" data-case="0">
+            <div class="case-card__type">追热点型</div>
+            <h3>个人成长赛道创作者</h3>
+            <p>热点入口 → # 选话题 → & 选专辑 → 10 分钟出初稿，再花 20 分钟润色就能发。</p>
+            <div class="media-split media-split--compact">
+              <div class="shot-slot shot-slot--card shot-slot--video has-image" data-shot="case-hot">
+                <video class="shot-slot__video" src="images/case-hot.mp4" autoplay muted loop playsinline preload="auto" aria-label="追热点创作者案例视频"></video>
+                <div class="shot-slot__ph">
+                  <span class="shot-slot__label">案例视频</span>
+                  <code class="shot-slot__path">images/case-hot.mp4</code>
+                </div>
+              </div>
+              <div class="demo-box demo-box--compact" data-anim="hot">
+                <div class="demo-box__mesh"></div>
+                <div class="demo-box__blur"></div>
+                <div class="demo-box__shine"></div>
+                <div class="demo-layer is-active">
+                  <div class="demo-ui" style="padding:0.65rem">
+                    <div class="demo-chips"></div>
+                    <div class="demo-lines"><div class="demo-line"></div><div class="demo-line"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="case-card" data-case="1">
+            <div class="case-card__type">资料驱动型</div>
+            <h3>行业报告解读创作者</h3>
+            <p>+ 上传 txt → Plan 确认结构 → AI 读完资料，主要把关观点和口吻。</p>
+            <div class="media-split media-split--compact">
+              <div class="shot-slot shot-slot--card shot-slot--video has-image" data-shot="case-doc">
+                <video class="shot-slot__video" src="images/case-doc.mp4" autoplay muted loop playsinline preload="auto" aria-label="资料驱动创作者案例视频"></video>
+                <div class="shot-slot__ph">
+                  <span class="shot-slot__label">案例视频</span>
+                  <code class="shot-slot__path">images/case-doc.mp4</code>
+                </div>
+              </div>
+              <div class="demo-box demo-box--compact" data-anim="doc">
+                <div class="demo-box__mesh"></div>
+                <div class="demo-box__blur"></div>
+                <div class="demo-box__shine"></div>
+                <div class="demo-layer is-active">
+                  <div class="demo-ui" style="padding:0.65rem">
+                    <div class="demo-chips"></div>
+                    <div class="demo-progress"><div class="demo-progress__fill"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="case-card" data-case="2">
+            <div class="case-card__type">长线连载型</div>
+            <h3>系列内容创作者</h3>
+            <p>历史对话恢复 → 直接说「接着上一版大纲写第三节」，像有个不会忘事的搭档。</p>
+            <div class="media-split media-split--compact">
+              <div class="shot-slot shot-slot--card shot-slot--video has-image" data-shot="case-series">
+                <video class="shot-slot__video" src="images/case-series.mp4" autoplay muted loop playsinline preload="auto" aria-label="系列内容创作者案例视频"></video>
+                <div class="shot-slot__ph">
+                  <span class="shot-slot__label">案例视频</span>
+                  <code class="shot-slot__path">images/case-series.mp4</code>
+                </div>
+              </div>
+              <div class="demo-box demo-box--compact" data-anim="history">
+                <div class="demo-box__mesh"></div>
+                <div class="demo-box__blur"></div>
+                <div class="demo-box__shine"></div>
+                <div class="demo-layer is-active">
+                  <div class="demo-ui" style="padding:0.65rem">
+                    <div class="demo-history" data-history-list></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="cta">
+      <div class="wrap">
+        <div class="cta reveal">
+          <h2>AI 经纪人 2.0，现在就开始写</h2>
+          <p>推荐 Web 端体验完整功能 · 热点页 / 专辑页 / 创作中心均可进入</p>
+          <a class="btn btn--primary" href="https://ximalaya.wjx.cn/vm/Y6v8c1N.aspx" target="_blank" rel="noopener noreferrer">报名体验 AI 经纪人</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">AI 经纪人 × 创作工具 · 仅供喜马拉雅创作者使用参考 · V2.0</div>
+  </footer>
+
+  <script>
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ── Screenshot slot image detection ──
+    function bindShotSlot(slot) {
+      const img = slot.querySelector('.shot-slot__img');
+      if (!img || !img.getAttribute('src')) return;
+      const check = () => {
+        if (img.complete && img.naturalWidth > 0) slot.classList.add('has-image');
+        else slot.classList.remove('has-image');
+      };
+      img.addEventListener('load', check);
+      img.addEventListener('error', () => slot.classList.remove('has-image'));
+      check();
+    }
+    document.querySelectorAll('.shot-slot').forEach(bindShotSlot);
+
+    const caseVideos = document.querySelectorAll('.shot-slot__video');
+    function playCaseVideo(video) {
+      if (!video) return;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.loop = true;
+      video.playsInline = true;
+      const attempt = video.play();
+      if (attempt?.catch) attempt.catch(() => {});
+    }
+    caseVideos.forEach(video => {
+      video.addEventListener('canplay', () => playCaseVideo(video), { once: true });
+      video.addEventListener('ended', () => {
+        video.currentTime = 0;
+        playCaseVideo(video);
+      });
+      playCaseVideo(video);
+    });
+
+    function updateShotSrc(img, path) {
+      if (!img) return;
+      const slot = img.closest('.shot-slot');
+      const pathEl = slot?.querySelector('.shot-slot__path');
+      if (pathEl) pathEl.textContent = path;
+      img.src = path;
+      const check = () => {
+        if (img.complete && img.naturalWidth > 0) slot?.classList.add('has-image');
+        else slot?.classList.remove('has-image');
+      };
+      img.onload = check;
+      img.onerror = () => slot?.classList.remove('has-image');
+      check();
+    }
+
+    // ── Nav scroll ──
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('is-scrolled', window.scrollY > 40);
+    }, { passive: true });
+
+    // ── Reveal on scroll ──
+    document.querySelectorAll('.reveal').forEach(el => {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+      obs.observe(el);
+    });
+
+    // ── Demo animation engine ──
+    const PLAN_STEP_LABELS = [
+      '分析资料要点，提炼核心观点',
+      '确定文章结构与受众定位',
+      '撰写正文初稿（约 1500 字）',
+      '生成标题备选并保存到文档库'
+    ];
+    const FLOW_COPY = [
+      '从热点 / 专辑 / 创作中心进入，业务信息自动带入',
+      '输入 # 选热点、& 选专辑，或用模板定风格',
+      '执行过程全程可见，复杂任务先确认计划',
+      '文档库查看编辑，稿子变成可复用资产'
+    ];
+    const FLOW_DEMOS = [
+      '<div class="demo-ui__bar"><span class="demo-ui__dot demo-ui__dot--r"></span><span class="demo-ui__dot demo-ui__dot--y"></span><span class="demo-ui__dot demo-ui__dot--g"></span></div><div style="font-size:0.7rem;color:var(--muted)">创作中心 · 热点页 · 专辑页</div><div class="demo-chip demo-chip--cyan is-show" style="margin-top:0.5rem">入口已带入业务信息</div>',
+      '<div class="demo-chips"><span class="demo-chip demo-chip--hash is-show"># 社会热点 TOP3</span><span class="demo-chip demo-chip--amp is-show"> & 个人成长专辑</span></div><div class="demo-lines"><div class="demo-line is-grow"></div><div class="demo-line is-grow" style="animation-delay:0.2s"></div></div>',
+      '<div class="demo-status is-show"><span class="demo-status__pulse"></span>正在执行第 3/5 步</div><div class="demo-progress"><div class="demo-progress__fill" style="width:60%"></div></div>',
+      '<div class="demo-file is-show">正文初稿.md</div><div style="font-size:0.65rem;color:var(--muted);margin-top:0.5rem">已存入文档库 · 可在线编辑</div>'
+    ];
+    const FLOW_SHOTS = [
+      'images/flow-step-1.png',
+      'images/flow-step-2.png',
+      'images/flow-step-3.png',
+      'images/flow-step-4.png'
+    ];
+    const SYM_SEQ = [
+      { key: 'at', float: '@ 选经纪人', type: '@热点快写经纪人', hint: '模板自动出现，不用写提示词', shot: 'images/symbol-at.png' },
+      { key: 'hash', float: '# 社会热点', type: '#近3天热度 TOP1', hint: '热点结构化信息自动带入', shot: 'images/symbol-hash.png' },
+      { key: 'amp', float: '& 个人成长', type: '&我的专辑「成长笔记」', hint: '内容调性自动对齐', shot: 'images/symbol-amp.png' },
+      { key: 'plus', float: '+ 行业报告.txt', type: '+ 上传 txt 作为参考', hint: '文档块可视化，可反复引用', shot: 'images/symbol-plus.png' }
+    ];
+    const FEAT_IDS = ['hot', 'doc', 'plan', 'visible', 'save', 'history'];
+    let userPaused = false;
+
+    function delay(ms) { return new Promise(r => setTimeout(r, reducedMotion ? 0 : ms)); }
+
+    function resetAnimEl(root) {
+      root.querySelectorAll('.demo-chip, .demo-line, .demo-bubble, .demo-arrow, .demo-file, .demo-status, .demo-history__item').forEach(el => {
+        el.classList.remove('is-show', 'is-grow', 'is-active');
+      });
+      root.querySelectorAll('.demo-progress__fill').forEach(el => { el.style.width = '0%'; });
+      root.querySelectorAll('.demo-plan-steps li').forEach(li => {
+        li.classList.remove('is-on', 'is-done');
+      });
+    }
+
+    async function animChips(container, chips, gap = 400) {
+      const wrap = container.querySelector('.demo-chips') || container;
+      if (wrap.querySelector('.demo-chips') === null && chips[0]?.html) {
+        wrap.innerHTML = '<div class="demo-chips"></div>';
+      }
+      const target = wrap.querySelector('.demo-chips') || wrap;
+      target.innerHTML = '';
+      for (const c of chips) {
+        const el = document.createElement('span');
+        el.className = `demo-chip demo-chip--${c.cls}`;
+        el.textContent = c.text;
+        target.appendChild(el);
+        await delay(80);
+        el.classList.add('is-show');
+        await delay(gap);
+      }
+    }
+
+    async function animLines(container) {
+      const lines = container.querySelectorAll('.demo-line');
+      for (const line of lines) {
+        line.classList.remove('is-grow');
+        await delay(50);
+        line.classList.add('is-grow');
+        await delay(350);
+      }
+    }
+
+    async function animProgress(container, pct = 85) {
+      const fill = container.querySelector('.demo-progress__fill');
+      if (!fill) return;
+      fill.style.width = '0%';
+      await delay(200);
+      fill.style.width = pct + '%';
+    }
+
+    async function animPlanSteps(listEl, labels) {
+      listEl.innerHTML = labels.map((t, i) =>
+        `<li data-i="${i}"><span class="demo-plan-steps__icon">${i + 1}</span>${t}</li>`
+      ).join('');
+      const items = listEl.querySelectorAll('li');
+      for (let i = 0; i < items.length; i++) {
+        items[i].classList.add('is-on');
+        await delay(900);
+        items[i].classList.remove('is-on');
+        items[i].classList.add('is-done');
+      }
+    }
+
+    async function animSave(container) {
+      for (const sel of ['.demo-bubble', '.demo-arrow', '.demo-file']) {
+        const el = container.querySelector(sel);
+        if (el) { el.classList.remove('is-show'); await delay(100); el.classList.add('is-show'); await delay(500); }
+      }
+    }
+
+    async function animHistory(container) {
+      const list = container.querySelector('[data-history-list]') || container.querySelector('.demo-history');
+      if (!list) return;
+      const items = ['昨天 · 大纲写到第二节', '3天前 · 热点解读初稿', '上周 · 行业报告分析'];
+      list.innerHTML = '';
+      list.className = 'demo-history';
+      for (let i = 0; i < items.length; i++) {
+        const el = document.createElement('div');
+        el.className = 'demo-history__item';
+        el.textContent = items[i];
+        list.appendChild(el);
+        await delay(120);
+        el.classList.add('is-show');
+        await delay(400);
+      }
+      await delay(300);
+      list.querySelectorAll('.demo-history__item').forEach(el => el.classList.remove('is-active'));
+      list.lastElementChild?.classList.add('is-active');
+    }
+
+    async function runStageDemo(box, type) {
+      if (!box || userPaused) return;
+      box.classList.add('is-demoing');
+      const layer = box.querySelector('.demo-layer') || box;
+      resetAnimEl(layer);
+
+      if (type === 'hero' || type === 'hot') {
+        await animChips(layer, [
+          { cls: 'hash', text: '# 社会热点' },
+          { cls: 'amp', text: '& 个人成长专辑' },
+          { cls: 'at', text: '悬疑 · 800字' }
+        ], 350);
+        await animLines(layer);
+        await animProgress(layer, 92);
+        const st = layer.querySelector('.demo-status');
+        if (st) { st.classList.add('is-show'); }
+      } else if (type === 'doc') {
+        await animChips(layer, [
+          { cls: 'doc', text: '+ 行业报告.txt' },
+          { cls: 'doc', text: '+ 访谈纪要.txt' }
+        ], 400);
+        await animProgress(layer, 70);
+        const st = layer.querySelector('.demo-status');
+        if (st) st.classList.add('is-show');
+      } else if (type === 'plan' || type === 'plan-full') {
+        const list = layer.querySelector('[data-plan-steps]') || layer.querySelector('.demo-plan-steps') || document.getElementById('planDemoSteps');
+        if (list) await animPlanSteps(list, PLAN_STEP_LABELS);
+      } else if (type === 'visible') {
+        const st = layer.querySelector('.demo-status');
+        if (st) st.classList.add('is-show');
+        await animProgress(layer, 55);
+        await delay(400);
+        await animProgress(layer, 80);
+        await animLines(layer);
+      } else if (type === 'save') {
+        await animSave(layer);
+      } else if (type === 'history') {
+        await animHistory(layer);
+      }
+      box.classList.remove('is-demoing');
+    }
+
+    // ── Flow auto demo ──
+    const flowSteps = document.querySelectorAll('.flow__step');
+    const flowLiveText = document.getElementById('flowLiveText');
+    const flowDemoUi = document.getElementById('flowDemoUi');
+    const flowLineProgress = document.getElementById('flowLineProgress');
+    const flowShotImg = document.getElementById('flowShotImg');
+    let flowIdx = 0;
+    let flowTimer = null;
+
+    function setFlowStep(i) {
+      flowIdx = i;
+      flowSteps.forEach((s, j) => s.classList.toggle('is-active', j === i));
+      if (flowLiveText) flowLiveText.textContent = FLOW_COPY[i];
+      updateShotSrc(flowShotImg, FLOW_SHOTS[i]);
+      if (flowDemoUi) {
+        flowDemoUi.innerHTML = FLOW_DEMOS[i];
+        animateFlowPanel(flowDemoUi);
+      }
+      document.querySelector('[data-stage="flow"]')?.classList.add('is-demoing');
+      setTimeout(() => document.querySelector('[data-stage="flow"]')?.classList.remove('is-demoing'), 2000);
+      if (flowLineProgress) flowLineProgress.style.width = (i / 3 * 75) + '%';
+    }
+
+    async function animateFlowPanel(ui) {
+      await delay(150);
+      ui.querySelectorAll('.demo-chip').forEach((el, j) => {
+        setTimeout(() => el.classList.add('is-show'), j * 300);
+      });
+      ui.querySelectorAll('.demo-line').forEach((el, j) => {
+        setTimeout(() => el.classList.add('is-grow'), 400 + j * 250);
+      });
+      const fill = ui.querySelector('.demo-progress__fill');
+      if (fill) setTimeout(() => { fill.style.width = fill.style.width || '60%'; }, 500);
+      const file = ui.querySelector('.demo-file');
+      if (file) setTimeout(() => file.classList.add('is-show'), 400);
+    }
+
+    function startFlowAutoplay() {
+      clearInterval(flowTimer);
+      if (userPaused || reducedMotion) return;
+      flowTimer = setInterval(() => {
+        setFlowStep((flowIdx + 1) % 4);
+      }, 3200);
+    }
+    setFlowStep(0);
+    startFlowAutoplay();
+    document.getElementById('flowSteps').addEventListener('mouseenter', () => clearInterval(flowTimer));
+    document.getElementById('flowSteps').addEventListener('mouseleave', startFlowAutoplay);
+    flowSteps.forEach((step, i) => {
+      step.addEventListener('click', () => { clearInterval(flowTimer); setFlowStep(i); });
+    });
+
+    // ── Feature tabs auto-rotate ──
+    const tabs = Array.from(document.querySelectorAll('.feat-tab'));
+    const panels = document.querySelectorAll('.feat-panel');
+    let featIdx = 0;
+    let featTimer = null;
+
+    function selectFeat(i, fromUser = false) {
+      featIdx = i;
+      const tab = tabs[i];
+      const id = tab.dataset.tab;
+      tabs.forEach((t, j) => {
+        t.classList.toggle('is-active', j === i);
+        t.setAttribute('aria-selected', j === i ? 'true' : 'false');
+        t.classList.toggle('is-auto-pulse', j === i && !fromUser);
+      });
+      panels.forEach(p => p.classList.remove('is-active'));
+      document.getElementById('panel-' + id)?.classList.add('is-active');
+      const box = document.querySelector(`#panel-${id} .demo-box`);
+      if (box) runStageDemo(box, id);
+      if (fromUser) clearInterval(featTimer);
+    }
+
+    function startFeatAutoplay() {
+      clearInterval(featTimer);
+      if (userPaused) return;
+      featTimer = setInterval(() => {
+        selectFeat((featIdx + 1) % tabs.length);
+      }, 4500);
+    }
+    tabs.forEach((tab, i) => tab.addEventListener('click', () => selectFeat(i, true)));
+    selectFeat(0);
+    startFeatAutoplay();
+    document.getElementById('features')?.addEventListener('mouseenter', () => clearInterval(featTimer));
+    document.getElementById('features')?.addEventListener('mouseleave', startFeatAutoplay);
+
+    // ── Symbols typewriter auto-cycle ──
+    const symKeys = document.querySelectorAll('.sym-key');
+    const symTypeText = document.getElementById('symTypeText');
+    const symTypeHint = document.getElementById('symTypeHint');
+    const symShotImg = document.getElementById('symShotImg');
+    const symFloat = document.getElementById('symFloat');
+    let symIdx = 0;
+    let symTimer = null;
+
+    async function typeText(text) {
+      if (!symTypeText) return;
+      symTypeText.innerHTML = '';
+      for (let i = 0; i <= text.length; i++) {
+        if (userPaused) return;
+        symTypeText.textContent = text.slice(0, i);
+        await delay(45);
+      }
+    }
+
+    async function playSym(i) {
+      symIdx = i;
+      const s = SYM_SEQ[i];
+      symKeys.forEach((k, j) => {
+        k.classList.toggle('is-active', j === i);
+        k.classList.toggle('is-auto-pulse', j === i);
+      });
+      if (symFloat) symFloat.textContent = s.float;
+      if (symTypeHint) symTypeHint.textContent = s.hint;
+      updateShotSrc(symShotImg, s.shot);
+      await typeText(s.type);
+    }
+
+    function startSymAutoplay() {
+      clearInterval(symTimer);
+      if (userPaused) return;
+      symTimer = setInterval(() => {
+        playSym((symIdx + 1) % SYM_SEQ.length);
+      }, 4200);
+    }
+    playSym(0);
+    startSymAutoplay();
+    symKeys.forEach((key, i) => key.addEventListener('click', () => { clearInterval(symTimer); playSym(i); }));
+    document.getElementById('symbols')?.addEventListener('mouseenter', () => clearInterval(symTimer));
+    document.getElementById('symbols')?.addEventListener('mouseleave', startSymAutoplay);
+
+    // ── Plan auto loop ──
+    const planSteps = document.querySelectorAll('#planSteps li');
+    const planRun = document.getElementById('planRun');
+    const planReset = document.getElementById('planReset');
+    const planDemoSteps = document.getElementById('planDemoSteps');
+    let planInterval = null;
+    let planPaused = false;
+
+    function resetPlanUI() {
+      clearInterval(planInterval);
+      planInterval = null;
+      planSteps.forEach(li => li.classList.remove('is-done', 'is-running'));
+      if (planDemoSteps) planDemoSteps.innerHTML = '';
+    }
+
+    function runPlanOnce() {
+      if (planPaused || userPaused) return;
+      resetPlanUI();
+      let step = 0;
+      planSteps[0]?.classList.add('is-running');
+      const planBox = document.querySelector('[data-stage="plan-demo"]');
+      if (planDemoSteps) animPlanSteps(planDemoSteps, PLAN_STEP_LABELS);
+      planInterval = setInterval(() => {
+        planSteps[step]?.classList.remove('is-running');
+        planSteps[step]?.classList.add('is-done');
+        step++;
+        if (step >= planSteps.length) {
+          clearInterval(planInterval);
+          planInterval = null;
+          if (planBox) runStageDemo(planBox, 'save');
+          setTimeout(() => { if (!planPaused && !userPaused) runPlanOnce(); }, 2500);
+          return;
+        }
+        planSteps[step]?.classList.add('is-running');
+      }, reducedMotion ? 0 : 1100);
+    }
+
+    planReset?.addEventListener('click', () => { resetPlanUI(); runPlanOnce(); });
+    planRun?.addEventListener('click', () => {
+      planPaused = !planPaused;
+      planRun.textContent = planPaused ? '继续演示' : '暂停演示';
+      if (planPaused) clearInterval(planInterval);
+      else runPlanOnce();
+    });
+    runPlanOnce();
+
+    // ── Cases carousel ──
+    const caseCards = document.querySelectorAll('.case-card');
+    let caseIdx = 0;
+    let caseTimer = null;
+
+    function setCase(i) {
+      caseIdx = i;
+      caseCards.forEach((c, j) => {
+        c.classList.toggle('is-active-case', j === i);
+        const box = c.querySelector('.demo-box');
+        const anim = box?.dataset.anim;
+        if (j === i && box && anim) runStageDemo(box, anim);
+        if (j === i) playCaseVideo(c.querySelector('.shot-slot__video'));
+      });
+    }
+
+    function startCaseAutoplay() {
+      clearInterval(caseTimer);
+      if (userPaused) return;
+      caseTimer = setInterval(() => setCase((caseIdx + 1) % caseCards.length), 4000);
+    }
+    setCase(0);
+    startCaseAutoplay();
+    caseCards.forEach((c, i) => c.addEventListener('click', () => { clearInterval(caseTimer); setCase(i); }));
+    document.getElementById('cases')?.addEventListener('mouseenter', () => clearInterval(caseTimer));
+    document.getElementById('cases')?.addEventListener('mouseleave', startCaseAutoplay);
+
+    // ── Hero loop on load ──
+    const heroBox = document.querySelector('.demo-box[data-stage="hero"]');
+    async function heroLoop() {
+      if (!heroBox || userPaused) return;
+      await runStageDemo(heroBox, 'hero');
+      setTimeout(heroLoop, 2000);
+    }
+    heroLoop();
+
+    // Init plan steps list in feature-plan panel
+    const featPlanList = document.querySelector('[data-plan-steps]');
+    if (featPlanList) {
+      featPlanList.innerHTML = PLAN_STEP_LABELS.map((t, i) =>
+        `<li><span class="demo-plan-steps__icon">${i+1}</span>${t}</li>`
+      ).join('');
+    }
+  </script>
+</body>
+</html>
